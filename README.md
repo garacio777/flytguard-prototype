@@ -1,5 +1,9 @@
 # FlytGuard — Specs-First AI Dispatch Prototype
 
+[![Deterministic Security & Architecture Gate](https://github.com/garacio777/flytguard-prototype/actions/workflows/ci-gate.yml/badge.svg)](https://github.com/garacio777/flytguard-prototype/actions/workflows/ci-gate.yml)
+
+**Live Prototype:** [https://flytguard-prototype.vercel.app](https://flytguard-prototype.vercel.app)
+
 **FlytGuard** converts unstructured Norwegian field requests (*"Vi trenger en 8-tonns gravemaskin og to lysmaster levert til byggeplass i Ås i morgen kl 07:00"*) into strictly validated, hallucination-proof equipment dispatch orders.
 
 Built to demonstrate a disciplined **Specs-First AI Engineering** workflow for **Sørby Utleie** and **Snakker AS**: architectural boundaries (`docs/SPEC.md`), AI coding guardrails (`CLAUDE.md`), and deterministic CI failure gates (`.github/workflows/ci-gate.yml`) are locked in Git *before* application code is introduced.

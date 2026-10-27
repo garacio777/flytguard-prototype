@@ -1,4 +1,4 @@
-import { onRequestPost } from "../functions/api/parse-dispatch";
+import { onRequestPost } from "../functions/api/parse-dispatch.js";
 
 export const config = {
   runtime: "edge"

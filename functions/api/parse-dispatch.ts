@@ -2,7 +2,7 @@ import {
   DispatchRequestSchema,
   DispatchOutputSchema,
   LlmCompletionEnvelopeSchema
-} from "../../src/schemas/dispatch";
+} from "../../src/schemas/dispatch.js";
 
 interface Env {
   OPENAI_API_KEY?: string;
