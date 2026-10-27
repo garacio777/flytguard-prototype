@@ -13,11 +13,12 @@ yarn-error.log*
 pnpm-debug.log*
 
 
-# environment variables & Cloudflare local secrets
+# environment variables & local deployment metadata
 .env
 .env.*
 .dev.vars
 .wrangler/
+.vercel/
 
 # macOS-specific files
 .DS_Store

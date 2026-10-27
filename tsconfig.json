@@ -8,6 +8,6 @@
     "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["src/**/*", "functions/**/*"],
+  "include": ["src/**/*", "functions/**/*", "api/**/*"],
   "exclude": ["dist", "node_modules"]
 }

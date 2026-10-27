@@ -2,7 +2,7 @@
 import { defineConfig } from "astro/config";
 
 export default defineConfig({
-  site: "https://flytguard-prototype.pages.dev",
+  site: "https://flytguard-prototype.vercel.app",
   output: "static",
   build: {
     inlineStylesheets: "never"
