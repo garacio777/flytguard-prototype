@@ -1,0 +1,65 @@
+name: Deterministic Security & Architecture Gate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verify-and-sanitize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Supply-Chain Lockfile Install (Blocks Postinstall Scripts)
+        run: npm ci --ignore-scripts
+
+      - name: Gate 1 - Strict TypeScript & Zod Contract Verification
+        run: npx tsc --noEmit
+
+      - name: Gate 2 - Gitleaks Secret Scanning
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Gate 3 - Semgrep SAST Scan
+        uses: semgrep/semgrep-action@v1
+        with:
+          config: >-
+            p/typescript
+            p/owasp-top-ten
+
+      - name: Gate 4 - Build Static Edge Artifacts
+        run: npm run build
+
+      - name: Gate 5 - Forensic Artifact & Source Map Sanitization
+        run: |
+          if [ -n "$(find dist -name '*.map')" ]; then
+            echo "FATAL: Source maps (.map) detected in production build."
+            exit 1
+          fi
+          if grep -rn "generator" dist/*.html; then
+            echo "FATAL: Framework generator footprint leaked in HTML."
+            exit 1
+          fi
+          if [ ! -f "dist/404.html" ]; then
+            echo "FATAL: Missing hard 404 route artifact (dist/404.html)."
+            exit 1
+          fi
+          for html_file in dist/*.html; do
+            if ! grep -q 'rel="canonical"' "$html_file"; then
+              echo "FATAL: Missing self-referencing canonical link in $html_file."
+              exit 1
+            fi
+            if ! grep -q '<main' "$html_file"; then
+              echo "FATAL: Missing semantic <main> landmark in $html_file."
+              exit 1
+            fi
+          done
