@@ -1,0 +1,251 @@
+---
+import "../styles/global.css";
+
+const canonicalUrl = new URL(Astro.url.pathname, Astro.site).toString();
+---
+
+<!doctype html>
+<html lang="nb">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>FlytGuard · Deterministisk AI-ordremottak for maskinutleie</title>
+    <meta
+      name="description"
+      content="Specs-first prototype som konverterer ustrukturerte norske feltbestillinger til strengt validerte maskinutleie-ordrer via Zod og isolerte Edge Workers."
+    />
+    <link rel="canonical" href={canonicalUrl} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container header-inner">
+        <a class="brand" href="/">
+          <span class="brand-mark" aria-hidden="true">FG</span>
+          <span>
+            <span class="brand-title">FlytGuard</span>
+            <span class="brand-subtitle">Deterministisk ordremottak · Maskinutleie &amp; Drift</span>
+          </span>
+        </a>
+
+        <nav class="header-nav" aria-label="Hovednavigasjon">
+          <a class="nav-link" href="#ordre-parser">Ordre-parser</a>
+          <a class="nav-link" href="#arkitektur">4-sone arkitektur</a>
+          <span class="zone-pill">Zone 1: Static Edge · Zero SSR</span>
+        </nav>
+      </div>
+    </header>
+
+    <main class="main-content" id="hovedinnhold">
+      <div class="container">
+        <section class="hero-banner" aria-labelledby="hero-heading">
+          <span class="eyebrow">Specs-First Prototype · Sørby Utleie &amp; Snakker AS</span>
+          <h1 class="hero-title" id="hero-heading">
+            Hallusinasjonssikker ordretolking fra byggeplass til utsending
+          </h1>
+          <p class="hero-lead">
+            Konverterer ustrukturerte norske meldinger fra anleggsledere til strengt skjemavaliderte
+            utstyrsbestillinger. Hver forespørsel og hvert AI-svar kontrolleres deterministisk med
+            Zod før videre behandling.
+          </p>
+        </section>
+
+        <div class="workspace-grid" id="ordre-parser">
+          <section class="panel" aria-labelledby="input-heading">
+            <div class="panel-header">
+              <h2 class="panel-title" id="input-heading">1. Feltbestilling (Input)</h2>
+              <span class="panel-badge">DispatchRequestSchema</span>
+            </div>
+
+            <div class="demo-box">
+              <div class="toggle-row">
+                <label class="toggle-label" for="demo-toggle">
+                  <input
+                    class="toggle-checkbox"
+                    type="checkbox"
+                    id="demo-toggle"
+                    checked
+                  />
+                  <span>Forhåndsutfylt norsk demo</span>
+                </label>
+                <span class="toggle-hint">Hurtigvalg</span>
+              </div>
+
+              <div class="preset-group" role="group" aria-label="Norske demoscenarioer">
+                <button
+                  type="button"
+                  class="preset-btn is-active"
+                  data-preset="standard"
+                >
+                  Ås · 8t graver + lysmaster
+                </button>
+                <button
+                  type="button"
+                  class="preset-btn"
+                  data-preset="multi"
+                >
+                  Ski · Hjullaster m/ fører
+                </button>
+                <button
+                  type="button"
+                  class="preset-btn preset-btn-danger"
+                  data-preset="invalid"
+                >
+                  Test Zod-avvisning (Gate 1)
+                </button>
+              </div>
+            </div>
+
+            <form id="dispatch-form" action="/api/parse-dispatch" method="post" novalidate>
+              <div class="form-field">
+                <div class="field-label-row">
+                  <label class="field-label" for="projectSiteId">Prosjekt-ID</label>
+                  <span class="field-constraint">Regex: ^PROJ-[0-9]&#123;4&#125;$</span>
+                </div>
+                <input
+                  class="text-input"
+                  type="text"
+                  id="projectSiteId"
+                  name="projectSiteId"
+                  autocomplete="off"
+                  spellcheck="false"
+                  value="PROJ-1042"
+                  placeholder="PROJ-1042"
+                  required
+                />
+              </div>
+
+              <div class="form-field">
+                <div class="field-label-row">
+                  <label class="field-label" for="rawMessage">Ustrukturert bestillingsmelding</label>
+                  <span class="field-constraint">10–500 tegn · .strict()</span>
+                </div>
+                <textarea
+                  class="textarea-input"
+                  id="rawMessage"
+                  name="rawMessage"
+                  rows="4"
+                  required
+                >Vi trenger en 8-tonns gravemaskin og to lysmaster levert til byggeplass i Ås i morgen kl 07:00</textarea>
+                <div class="field-footer">
+                  <span>Blokkerer prompt-stuffing og ukjente JSON-felter</span>
+                  <span class="char-counter" id="char-counter">96 / 500 tegn</span>
+                </div>
+              </div>
+
+              <div class="button-row">
+                <button type="submit" class="btn-primary" id="submit-btn">
+                  Valider og tolk bestilling (POST /api/parse-dispatch)
+                </button>
+                <button type="button" class="btn-secondary" id="preview-contract-btn">
+                  Vis kontrakteksempel
+                </button>
+              </div>
+            </form>
+          </section>
+
+          <section class="panel" aria-labelledby="output-heading">
+            <div class="panel-header">
+              <h2 class="panel-title" id="output-heading">2. Validert utsendingsordre (Output)</h2>
+              <span class="panel-badge">DispatchOutputSchema</span>
+            </div>
+
+            <div class="gate-strip" aria-label="Sikkerhetsporter i Zone 4">
+              <div class="gate-step" id="gate-1-indicator">
+                <span class="gate-step-name">Gate 1 · Input</span>
+                <span class="gate-step-desc">Zod .safeParse()</span>
+              </div>
+              <div class="gate-step" id="gate-2-indicator">
+                <span class="gate-step-name">Gate 2 · Worker</span>
+                <span class="gate-step-desc">Isolert kall (temp=0)</span>
+              </div>
+              <div class="gate-step" id="gate-3-indicator">
+                <span class="gate-step-name">Gate 3 · Output</span>
+                <span class="gate-step-desc">Enum &amp; ISO-8601 lås</span>
+              </div>
+            </div>
+
+            <div class="result-region" id="result-container" aria-live="polite">
+              <div class="status-banner">
+                <p class="status-banner-title">KLAR FOR VALIDERING</p>
+                <p class="status-banner-text">
+                  Send den forhåndsutfylte norske bestillingen til <code>/api/parse-dispatch</code>,
+                  velg «Test Zod-avvisning (Gate 1)» for å teste deterministisk feilhåndtering,
+                  eller klikk «Vis kontrakteksempel» for lokal skjemavisning.
+                </p>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <aside class="arch-section" id="arkitektur" aria-labelledby="arch-heading">
+          <div class="arch-header">
+            <h2 class="arch-title" id="arch-heading">
+              4-Zone Assume Breach Arkitektur &amp; CI-sikringsporter
+            </h2>
+            <p class="arch-subtitle">
+              Låst via <code>docs/SPEC.md</code>, <code>CLAUDE.md</code> og
+              <code>.github/workflows/ci-gate.yml</code> før applikasjonskode genereres.
+            </p>
+          </div>
+
+          <div class="arch-grid">
+            <article class="arch-card">
+              <span class="arch-zone-tag">ZONE 1 · PUBLIC EDGE</span>
+              <h3 class="arch-card-title">Statisk Astro-grensesnitt</h3>
+              <p class="arch-card-desc">
+                Forhåndskompilert HTML og CSS med streng CSP (<code>script-src 'self'</code>,
+                <code>style-src 'self'</code>) uten offentlig SSR-angrepsflate.
+              </p>
+            </article>
+
+            <article class="arch-card">
+              <span class="arch-zone-tag">ZONE 2 · ADMIN PLANE</span>
+              <h3 class="arch-card-title">Isolert ERP &amp; maskinpark</h3>
+              <p class="arch-card-desc">
+                Lagerstatus og interne flåtesystemer ligger i privat nettverk kun tilgjengelig via
+                Zero Trust-tunnel og maskinvarebasert FIDO2 MFA.
+              </p>
+            </article>
+
+            <article class="arch-card">
+              <span class="arch-zone-tag">ZONE 3 · EPHEMERAL CI GATE</span>
+              <h3 class="arch-card-title">Deterministisk byggkontroll</h3>
+              <p class="arch-card-desc">
+                Håndhever <code>npm ci --ignore-scripts</code>, <code>tsc --noEmit</code>, Gitleaks,
+                Semgrep SAST og kildekart-sanitering før utrulling.
+              </p>
+            </article>
+
+            <article class="arch-card">
+              <span class="arch-zone-tag">ZONE 4 · MICRO-PERIMETER</span>
+              <h3 class="arch-card-title">Tilstandsløs Edge Worker</h3>
+              <p class="arch-card-desc">
+                <code>functions/api/parse-dispatch.ts</code> isolerer systemprompt og avviser ethvert
+                avvik fra <code>DispatchOutputSchema</code> med HTTP 422.
+              </p>
+            </article>
+          </div>
+
+          <div class="enum-bar">
+            <span class="enum-label">Tillatte utstyrskategorier (EquipmentCategoryEnum):</span>
+            <span class="enum-chip">GRAVEMASKIN</span>
+            <span class="enum-chip">HJULLASTER</span>
+            <span class="enum-chip">LIFT_STILLAS</span>
+            <span class="enum-chip">STRØM_VARME_LYS</span>
+            <span class="enum-chip">KOMPRIMERING</span>
+          </div>
+        </aside>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-inner">
+        <span>FlytGuard Prototype · Specs-First AI Engineering</span>
+        <span class="mono">SPEC.md · CLAUDE.md · ci-gate.yml · Zod Strict</span>
+      </div>
+    </footer>
+
+    <script src="../scripts/dispatch-client.ts"></script>
+  </body>
+</html>

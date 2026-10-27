@@ -1,0 +1,66 @@
+---
+import "../styles/global.css";
+
+const canonicalUrl = new URL(Astro.url.pathname, Astro.site).toString();
+---
+
+<!doctype html>
+<html lang="nb">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>404 Fant ikke siden · FlytGuard</title>
+    <meta
+      name="description"
+      content="Hard HTTP 404-rute i FlytGuard for å forhindre soft-404 tilstander på offentlig kant."
+    />
+    <link rel="canonical" href={canonicalUrl} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container header-inner">
+        <a class="brand" href="/">
+          <span class="brand-mark" aria-hidden="true">FG</span>
+          <span>
+            <span class="brand-title">FlytGuard</span>
+            <span class="brand-subtitle">Deterministisk ordremottak · Maskinutleie &amp; Drift</span>
+          </span>
+        </a>
+
+        <nav class="header-nav" aria-label="Hovednavigasjon">
+          <a class="nav-link" href="/">Tilbake til forsiden</a>
+          <span class="zone-pill">HTTP 404 · Hard Edge Route</span>
+        </nav>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <div class="container">
+        <section class="not-found-card" aria-labelledby="not-found-heading">
+          <span class="not-found-code">HTTP 404 · RUTE IKKE FUNNET</span>
+          <h1 class="hero-title" id="not-found-heading">
+            Forespurt ressurs eksisterer ikke i Zone 1
+          </h1>
+          <p class="hero-lead">
+            I henhold til arkitekturkontrakten returnerer ukjente ruter en eksplisitt statisk
+            <code>404</code>-respons ved kanten uten omdirigering til myke feilsider eller eksponering
+            av server-side kjøretidsmiljø.
+          </p>
+          <div class="button-row">
+            <a class="btn-primary" href="/">
+              Gå til FlytGuard Ordre-parser
+            </a>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-inner">
+        <span>FlytGuard Prototype · Hard 404 Edge Hygiene</span>
+        <span class="mono">Zone 1 Static Artifact</span>
+      </div>
+    </footer>
+  </body>
+</html>
