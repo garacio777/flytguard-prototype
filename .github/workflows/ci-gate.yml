@@ -41,7 +41,7 @@ jobs:
       - name: Gate 4 - Build Static Edge Artifacts
         run: npm run build
 
-      - name: Gate 5 - Forensic Artifact & Source Map Sanitization
+      - name: Gate 5 - Forensic Artifact, Header Parity & Source Map Sanitization
         run: |
           if [ -n "$(find dist -name '*.map')" ]; then
             echo "FATAL: Source maps (.map) detected in production build."
@@ -62,6 +62,16 @@ jobs:
             fi
             if ! grep -q '<main' "$html_file"; then
               echo "FATAL: Missing semantic <main> landmark in $html_file."
+              exit 1
+            fi
+          done
+          for header_name in "Strict-Transport-Security" "X-Content-Type-Options" "X-Frame-Options" "Referrer-Policy" "Permissions-Policy" "Content-Security-Policy" "Cross-Origin-Resource-Policy"; do
+            if ! grep -q "$header_name" public/_headers; then
+              echo "FATAL: Missing $header_name in public/_headers."
+              exit 1
+            fi
+            if ! grep -q "$header_name" vercel.json; then
+              echo "FATAL: Missing $header_name in vercel.json (header parity drift)."
               exit 1
             fi
           done

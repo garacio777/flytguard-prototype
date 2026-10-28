@@ -218,11 +218,11 @@ const canonicalUrl = new URL(Astro.url.pathname, Astro.site).toString();
             </article>
 
             <article class="arch-card">
-              <span class="arch-zone-tag">ZONE 4 · MICRO-PERIMETER</span>
-              <h3 class="arch-card-title">Tilstandsløs Edge Worker</h3>
+              <span class="arch-zone-tag">ZONE 4 · MICRO-PERIMETER &amp; MCP</span>
+              <h3 class="arch-card-title">Edge Worker + MCP Server</h3>
               <p class="arch-card-desc">
-                <code>functions/api/parse-dispatch.ts</code> isolerer systemprompt og avviser ethvert
-                avvik fra <code>DispatchOutputSchema</code> med HTTP 422.
+                Eksponerer både <code>/api/parse-dispatch</code> og Streamable HTTP
+                <code>/api/mcp</code> med streng <code>DispatchOutputSchema</code>-lås.
               </p>
             </article>
           </div>

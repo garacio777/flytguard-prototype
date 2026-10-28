@@ -405,7 +405,7 @@ function initDispatchWorkspace(): void {
         rawJson = await response.json();
       } catch {
         rawJson = {
-          error: "Endepunktet returnerte ikke JSON (sjekk at Cloudflare Pages Worker kjører)."
+          error: "Endepunktet returnerte ikke JSON (sjekk at Zone 4 Edge Worker kjører)."
         };
       }
 
@@ -496,7 +496,7 @@ function initDispatchWorkspace(): void {
       renderDiagnosticNotice(
         resultContainer,
         response.status,
-        "Zone 1 statisk UI kjører uten tilkoblet Cloudflare Pages Worker. Kjør `npx wrangler pages dev dist` eller distribuer til Cloudflare Pages for live `/api/parse-dispatch`.",
+        "Zone 1 statisk UI kjører uten tilkoblet Zone 4 Edge-runtime. Bruk Vercel Edge / Cloudflare Pages eller kjør lokal Edge-dev for live `/api/parse-dispatch`.",
         rawJson
       );
     } catch {
